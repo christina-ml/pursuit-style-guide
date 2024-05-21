@@ -2,13 +2,18 @@
 
 Pursuit JavaScript Style Guide
 
-## Table of Contents
+# Table of Contents
 - [Pursuit Style Guide](#pursuit-style-guide)
-	- [Table of Contents](#table-of-contents)
-	- [Proper Indentation and Spacing](#proper-indentation-and-spacing)
+- [Table of Contents](#table-of-contents)
+	- [Types](#types)
+		- [Primitive Data Types](#primitive-data-types)
+		- [Non-Primitive Data Types](#non-primitive-data-types)
 	- [Understanding Scope](#understanding-scope)
 	- [Const Over Let](#const-over-let)
 	- [Avoid Using Var](#avoid-using-var)
+	- [Proper Indentation and Spacing](#proper-indentation-and-spacing)
+	- [Use of Semicolons](#use-of-semicolons)
+- [Naming Conventions](#naming-conventions)
 	- [Use Descriptive Function and Variable Names](#use-descriptive-function-and-variable-names)
 	- [Functions Should Start With Verbs](#functions-should-start-with-verbs)
 	- [Variables Should Start with Adjectives or Nouns](#variables-should-start-with-adjectives-or-nouns)
@@ -16,6 +21,84 @@ Pursuit JavaScript Style Guide
 	- [When Using a Type in the Name use an Abbreviation](#when-using-a-type-in-the-name-use-an-abbreviation)
 	- [Double Loop](#double-loop)
 
+## Types
+
+### Primitive Data Types
+A primitive (primitive value, primitive data type) is data that is not an object and has no methods or properties.
+
+All primitives are immutable; that is, they cannot be altered.
+
+JavaScript has 7 primitive data types.
+
+1. string
+2. number
+3. bigint
+4. boolean
+5. undefined
+6. symbol
+7. null
+
+The `string` data type in JavaScript represents a sequence of characters that are surrounded by single or double quotes.
+
+The `number` data type in javaScript can be used to hold decimal values as well as values without decimals.
+
+`bigInt` data type can represent numbers greater than 2<sup>53</sup>-1 which helps to perform operations on large numbers. The number is specified by writing ‘n’ at the end of the value.
+
+The `boolean` type represents a logical entity and can accept only two values: `true` and `false`.
+
+`undefined` means that a variable has been declared but has not been assigned a value, or it has been explicitly set to the value `undefined`.
+
+The `symbol` data type is used to create objects which will always be unique. these objects can be created using Symbol constructor.
+
+The Null type is inhabited by exactly one value: `null`.
+
+### Non-Primitive Data Types
+1. An object
+2. An array
+
+An `object` in Javascript is an entity having properties and methods. Everything is an object in javascript.
+
+An `array` can store more than one element under a single name.
+
+## Understanding Scope
+JavaScript has the following kinds of scopes:
+* **Global scope**: The default scope for all code running in script mode.
+* **Module scope**: The scope for code running in module mode.
+* **Function scope**: The scope created with a function.
+
+Variables declared with `let` or `const` can belong to an additional scope:
+* **Block scope**: The scope created with a pair of curly braces (a block).
+
+## Const Over Let
+Variables in JavaScript are either `const` or `let`. 
+
+It's good practice to use `const` over `let` whenever possible, as it makes your code more predictable and less prone to bugs.
+
+If you must reassign references, use `let` instead of `var`.
+
+Both `let` and `const` are block-scoped, whereas `var` is function-scoped.
+
+```js
+// block-scoped, can be reassigned
+let countOfFellows = 20;
+countOfFellows = 21; 	    
+
+// block-scoped, cannot reassign
+const animals = ["bear", "turtle", "quokka"];	
+
+// function-scoped
+var plants = ["cactus", "sunflower", "hydrangea"]; 
+```
+
+## Avoid Using Var
+What is `var`, and why should we avoid using it?
+
+The keywords `let` and `var` both declare new variables in JavaScript. The difference between `let` and `var`  is in the scope of the variables they create:
+
+* Variables declared by `let` are only available inside the block where they’re defined.
+* Variables declared by `var` are available throughout the function in which they’re declared.
+
+Avoid using `var` because of function scope. Using `let` or `const` uses block scope, which is less error-prone.Additionally, ECMAScript6 (ES6 / JavaScript 2015) encourages you to declare variables with `let` not `var`.
 
 ## Proper Indentation and Spacing
 
@@ -63,46 +146,29 @@ func
 ();
 ```
 
-## Understanding Scope
-JavaScript has the following kinds of scopes:
-* **Global scope**: The default scope for all code running in script mode.
-* **Module scope**: The scope for code running in module mode.
-* **Function scope**: The scope created with a function.
+## Use of Semicolons
+Most JavaScript statements and declarations must end with a semicolon. While semicolons are not always required, it is good practice to include them to avoid unexpected behaviors.
 
-Variables declared with `let` or `const` can belong to an additional scope:
-* **Block scope**: The scope created with a pair of curly braces (a block).
+How does JavaScript interpret line breaks?
 
-## Const Over Let
-Variables in JavaScript are either `const` or `let`. 
-
-It's good practice to use `const` over `let` whenever possible, as it makes your code more predictable and less prone to bugs.
-
-If you must reassign references, use `let` instead of `var`.
-
-Both `let` and `const` are block-scoped, whereas `var` is function-scoped.
+For code without a semicolon, JavaScript uses a set of rules called `Automatic Semicolon Insertion`  to determine whether it should regard that line break as the end of a statement, and may place a semicolon into your code before the line break. You can also configure your linter to catch any missing semicolons.
 
 ```js
-// block-scoped, can be reassigned
-let countOfFellows = 20;
-countOfFellows = 21; 	    
-
-// block-scoped, cannot reassign
-const animals = ["bear", "turtle", "quokka"];	
-
-// function-scoped
-var plants = ["cactus", "sunflower", "hydrangea"]; 
+// good
+let i = 0; i++    // <-- semicolon obligatory
+        				// (but optional before newline)
+let i = 0           // <-- semicolon optional
+	i++               // <-- semicolon optional
 ```
+An important quirk: inside the `()` of a for loop, semicolons only go after the first and second statement, never after the third:
+*/
 
-## Avoid Using Var
-What is `var`, and why should we avoid using it?
+// ```js
+// for (let i=0; i < 10; i++)  {/*actions*/}       // correct
+// for (let i=0; i < 10; i++;) {/*actions*/}       // SyntaxError
+// ```
 
-The keywords `let` and `var` both declare new variables in JavaScript. The difference between `let` and `var`  is in the scope of the variables they create:
-
-* Variables declared by `let` are only available inside the block where they’re defined.
-* Variables declared by `var` are available throughout the function in which they’re declared.
-
-Avoid using `var` because of function scope. Using `let` or `const` uses block scope, which is less error-prone.Additionally, ECMAScript6 (ES6 / JavaScript 2015) encourages you to declare variables with `let` not `var`.
-
+# Naming Conventions
 ## Use Descriptive Function and Variable Names
 
 Use descriptive function and variable names whenever possible. Avoid single letter variable names. Variable names should be written using `camelCase`.
@@ -284,8 +350,7 @@ let bus = 'yellow bus';
 ```
 
 ## When Using a Type in the Name use an Abbreviation
-
-What are types?
+What are the abbreviations for [types](#types)?
 In JavaScript there are 5 different data types that can contain values:
 
 Examples
