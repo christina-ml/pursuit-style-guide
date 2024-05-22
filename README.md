@@ -20,6 +20,12 @@ Pursuit JavaScript Style Guide
 	- [Avoid Using Keywords in Variables and Function Names](#avoid-using-keywords-in-variables-and-function-names)
 	- [When Using a Type in the Name use an Abbreviation](#when-using-a-type-in-the-name-use-an-abbreviation)
 	- [Double Loop](#double-loop)
+	- [Objects](#objects)
+	- [Arrays](#arrays)
+	- [Destructuring](#destructuring)
+	- [Strings](#strings)
+	- [Functions](#functions)
+	- [Arrow Functions](#arrow-functions)
 
 ## Types
 
@@ -59,6 +65,14 @@ The Null type is inhabited by exactly one value: `null`.
 An `object` in Javascript is an entity having properties and methods. Everything is an object in javascript.
 
 An `array` can store more than one element under a single name.
+
+> **Note:** JavaScript does not have a `function` data type. When we find the data type of a function using the typeof operator, we find that it returns a function. This is because a function is an object in JavaScript. Ideally the data type of a function should return an object but instead, it returns a function.
+> ```js
+>function pets() {
+>    return "dog, cat, fish";
+>}
+>console.log(typeof pets) // 'function'
+>```
 
 ## Understanding Scope
 JavaScript has the following kinds of scopes:
@@ -107,19 +121,6 @@ Proper indentation and spacing should be consistent throughout your code. Many d
 JavaScript will not throw an error for improper indentation. As a developer, you need to make sure your code is readable.
 
 ```js
-// good
-function properIndentation() {
-	const numbers = [1, 2, 3, 4];
-	let count = 0;
-
-	for (const number of numbers) {
-		if (typeof number === "number") {
-			count += 1;
-		}
-	}
-	return `I have indented my code ${count} spaces.`;
-}
-
 // bad
 function properIndentation() {
 const numbers = [1, 2, 3, 4];
@@ -132,18 +133,31 @@ let count = 0;
     }
 return `I still need to indent my code ${count} spaces.`;
 }
+
+// good
+function properIndentation() {
+	const numbers = [1, 2, 3, 4];
+	let count = 0;
+
+	for (const number of numbers) {
+		if (typeof number === "number") {
+			count += 1;
+		}
+	}
+	return `I have indented my code ${count} spaces.`;
+}
 ```
 
 Avoid spaces between functions and their invocations.
 ```js
-// good
-func();
-
 // bad
 func ();
 
 func
 ();
+
+// good
+func();
 ```
 
 ## Use of Semicolons
@@ -209,15 +223,6 @@ const this_is_snake_case = true;
 Descriptive function and variable names:
 
 ```js
-// good
-function query() {
-	// ...
-}
-
-const id = 2;
-const greeting = "hello world";
-
-
 // bad
 function q() {
 	// ...
@@ -225,6 +230,14 @@ function q() {
 
 const x = 2;
 const y = "hello world";
+
+// good
+function query() {
+	// ...
+}
+
+const id = 2;
+const greeting = "hello world";
 ```
 
 ## Functions Should Start With Verbs
@@ -246,6 +259,14 @@ What are verbs?
 Examples:
 
 ```js
+// bad
+function cheerfulHero() {			// adjective: cheerful
+	// ...
+}
+function goodDirectory() { 		// adjective: good
+	// ...
+}
+
 // good
 function createHero() {				// verb: create
 	// ...
@@ -257,14 +278,6 @@ function insideDirectory() {	// noun: inside
 	// ...
 }
 function fortyTwo() { 		 	 	  // noun: forty
-	// ...
-}
-
-// bad
-function cheerfulHero() {			// adjective: cheerful
-	// ...
-}
-function goodDirectory() { 		// adjective: good
 	// ...
 }
 ```
@@ -294,10 +307,6 @@ What are nouns?
 
 Examples:
 ```js
-// good adjectives
-
-// bad adjectives
-
 // good nouns
 const dog = "Clifford";		 // noun: dog
 const schoolBus = "";		 // noun: school bus
@@ -433,5 +442,177 @@ words.forEach((word) => {
 			console.log(letter);
 		}
 	});
+});
+```
+
+## Objects
+Use the literal syntax for object creation.
+```js
+// bad
+const students = new Object();
+
+// good
+const students = {};
+```
+
+## Arrays
+Use the literal syntax for array creation.
+```js
+// bad
+const nums = new Array();
+
+// good
+const nums = [];
+```
+
+## Destructuring
+What is destructuring?
+Destructuring is a JavaScript expression that allows us to extract data from arrays, objects, and maps and set them into new, distinct variables. Destructuring allows us to extract multiple properties, or items, from an array​ at a time.
+
+Use object destructuring when accessing and using multiple properties of an object.
+
+```js
+// bad
+function getFullName(user) {
+	const firstName = user.firstName;
+	const lastName = user.lastName;
+
+	return `${firstName} ${lastName}`;
+}
+
+// good
+function getFullName(user) {
+	const { firstName, lastName } = user;
+	return `${firstName} ${lastName}`;
+}
+
+// best
+function getFullName({ firstName, lastName }) {
+	return `${firstName} ${lastName}`;
+}
+```
+
+Use array destructuring.
+
+```js
+const arr = [1, 2, 3, 4];
+
+// bad
+const first = arr[0];
+const second = arr[1];
+
+// good
+const [first, second] = arr;
+```
+
+Use object destructuring for multiple return values, not array destructuring.
+```js
+// good
+function processInput(input) {
+	// then a miracle occurs
+	return { left, right, top, bottom };
+}
+
+// the caller selects only the data they need
+const { left, top } = processInput(input);
+```
+
+## Strings
+Use single quotes `''` for strings.
+```js
+// bad
+const name = "Capt. Jack Sparrow";
+
+// bad - template literals should contain interpolation or newlines
+const name = `Capt. Jack Sparrow`;
+
+// good
+const name = 'Capt. Jack Sparrow';
+```
+
+Strings that cause the line to go over 100 characters should not be written across multiple lines using string concatenation.
+```js
+// bad
+const errorMessage = 'This is a super long error that was thrown because \
+of Batman. When you stop to think about how Batman had anything to do \
+with this, you would get nowhere \
+fast.';
+
+// bad
+const errorMessage = 'This is a super long error that was thrown because ' +
+'of Batman. When you stop to think about how Batman had anything to do ' +
+'with this, you would get nowhere fast.';
+
+// good
+const errorMessage = 'This is a super long error that was thrown because of Batman. When you stop to think about how Batman had anything to do with this, you would get nowhere fast.';
+```
+
+When programmatically building up strings, use template strings instead of concatenation.
+```js
+// bad
+function sayHi(name) {
+	return 'How are you, ' + name + '?';
+}
+
+// bad
+function sayHi(name) {
+	return ['How are you, ', name, '?'].join();
+}
+
+// bad
+function sayHi(name) {
+	return `How are you, ${ name }?`;
+}
+
+// good
+function sayHi(name) {
+	return `How are you, ${name}?`;
+}
+```
+Do not unnecessarily escape characters in strings. 
+```js
+// bad
+const foo = '\'this\' \i\s \"quoted\"';
+
+// good
+const foo = '\'this\' is "quoted"';
+const foo = `my name is '${name}'`;
+```
+
+Never use `eval()` on a string; it opens too many vulnerabilities and is an enormous security risk.
+
+## Functions
+Use named function expressions instead of function declarations.
+```js
+// bad
+function foo() {
+	// ...
+}
+
+// bad
+const foo = function () {
+	// ...
+};
+
+// good
+// lexical name distinguished from the variable-referenced invocation(s)
+const short = function longUniqueMoreDescriptiveLexicalFoo() {
+	// ...
+};
+```
+
+## Arrow Functions
+When you must use an anonymous function (as when passing an inline callback), use arrow function notation.
+```js
+// bad
+[1, 2, 3].map(function (x) {
+	const y = x + 1;
+	return x * y;
+});
+
+// good
+[1, 2, 3].map((x) => {
+	const y = x + 1;
+	return x * y;
 });
 ```
