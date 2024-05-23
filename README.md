@@ -14,7 +14,10 @@ Pursuit JavaScript Style Guide
 	- [Proper Indentation and Spacing](#proper-indentation-and-spacing)
 	- [Use of Semicolons](#use-of-semicolons)
 - [Naming Conventions](#naming-conventions)
+	- [Avoid single letter names](#avoid-single-letter-names)
 	- [Use Descriptive Function and Variable Names](#use-descriptive-function-and-variable-names)
+	- [Exporting](#exporting)
+	- [Acronyms and Initialisms](#acronyms-and-initialisms)
 	- [Functions Should Start With Verbs](#functions-should-start-with-verbs)
 	- [Variables Should Start with Adjectives or Nouns](#variables-should-start-with-adjectives-or-nouns)
 	- [Avoid Using Keywords in Variables and Function Names](#avoid-using-keywords-in-variables-and-function-names)
@@ -27,7 +30,12 @@ Pursuit JavaScript Style Guide
 - [Functions](#functions)
 	- [Arrow Functions](#arrow-functions)
 	- [Classes \& Constructors](#classes--constructors)
-- [Modules](#modules)
+- [Comments](#comments)
+	- [Prefixing your comments](#prefixing-your-comments)
+- [Whitespace](#whitespace)
+	- [No Trailing Whitespace](#no-trailing-whitespace)
+- [Commas](#commas)
+	- [Trailing commas](#trailing-commas)
 
 ## Types
 
@@ -185,11 +193,26 @@ An important quirk: inside the `()` of a for loop, semicolons only go after the 
 // ```
 
 # Naming Conventions
-## Use Descriptive Function and Variable Names
+## Avoid single letter names
+Avoid single letter names. Be descriptive with your naming.
+```js
+// bad
+function q() {
+	// ...
+}
 
+// good
+function query() {
+	// ...
+}
+```
+
+Use camelCase when naming objects, functions, and instances.
+
+## Use Descriptive Function and Variable Names
 Use descriptive function and variable names whenever possible. Avoid single letter variable names. Variable names should be written using `camelCase`.
 
-> What is `camel case`, `pascal case`, `snake case`, and `kebab case`?
+> What is `camel case`?
 
 Use `camelCase` when naming objects, functions, and instances.
 ```js
@@ -197,6 +220,7 @@ Use `camelCase` when naming objects, functions, and instances.
 const thisIsCamelCase = true;
 ```
 
+> What is `pascal case`?
 Use PascalCase only when naming constructors or classes.
 
 ```js
@@ -222,25 +246,74 @@ const this_is_snake_case = true;
 }
 ```
 
-Descriptive function and variable names:
-
+Do not use trailing or leading underscores.
 ```js
 // bad
-function q() {
-	// ...
-}
-
-const x = 2;
-const y = "hello world";
+this.__firstName__ = 'Panda';
+this.firstName_ = 'Panda';
+this._firstName = 'Panda';
 
 // good
-function query() {
+this.firstName = 'Panda';
+
+// good, in environments where WeakMaps are available
+// see https://compat-table.github.io/compat-table/es6/#test-WeakMap
+const firstNames = new WeakMap();
+firstNames.set(this, 'Panda');
+```
+
+## Exporting
+Use camelCase when you export-default a function. Your filename should be identical to your function’s name.
+```js
+function makeStyleGuide() {
 	// ...
 }
 
-const id = 2;
-const greeting = "hello world";
+export default makeStyleGuide;
 ```
+Use PascalCase when you export a constructor / class / singleton / function library / bare object.
+```js
+const AirbnbStyleGuide = {
+	es6: {
+	},
+};
+
+export default AirbnbStyleGuide;
+```
+
+## Acronyms and Initialisms
+Acronyms and initialisms should always be all uppercased, or all lowercased.
+```js
+// bad
+import SmsContainer from "./containers/SmsContainer";
+
+// bad
+const HttpRequests = [
+	// ...
+];
+
+// good
+import SMSContainer from "./containers/SMSContainer";
+
+// good
+const HTTPRequests = [
+	// ...
+];
+
+// also good
+const httpRequests = [
+	// ...
+];
+
+// best
+import TextMessageContainer from "./containers/TextMessageContainer";
+
+// best
+const requests = [
+	// ...
+];
+```
+
 
 ## Functions Should Start With Verbs
 JavaScript function names should be in camel case and use descriptive nouns and verbs as prefixes. This makes it clear what the function does and what kind of value it returns.
@@ -807,4 +880,156 @@ class Foo {
 }
 ```
 
-# Modules
+# Comments
+Use `/** ... */` for multiline comments.
+
+Use `//` for single line comments. Place single line comments on a newline above the subject of the comment. Put an empty line before the comment unless it’s on the first line of a block.
+
+Start all comments with a space to make it easier to read. 
+
+## Prefixing your comments
+Prefixing your comments with `FIXME` or `TODO` helps other developers quickly understand if you’re pointing out a problem that needs to be revisited, or if you’re suggesting a solution to the problem that needs to be implemented. These are different than regular comments because they are actionable. The actions are `FIXME: -- need to figure this out` or `TODO: -- need to implement`.
+
+Use `// FIXME:` to annotate problems.
+Use `// TODO:` to annotate solutions to problems.
+
+# Whitespace
+Whitespace refers to characters which are used to provide horizontal or vertical space between other characters. Whitespace is often used to separate tokens in HTML, CSS, JavaScript, and other computer languages.
+
+## No Trailing Whitespace
+Be sure to clean up any trailing whitespace in your JS files.
+
+# Commas
+Avoid leading commas.
+```js
+// ARRAYS
+// bad
+const story = [
+    once
+    , upon
+    , aTime
+];
+
+// good
+const story = [
+    once,
+    upon,
+    aTime,
+];
+
+// OBJECTS
+// bad
+const hero = {
+    firstName: 'Ada'
+    , lastName: 'Lovelace'
+    , birthYear: 1815
+    , superPower: 'computers'
+};
+
+// good
+const hero = {
+    firstName: 'Ada',
+    lastName: 'Lovelace',
+    birthYear: 1815,
+    superPower: 'computers',
+};
+```
+
+## Trailing commas
+JavaScript has allowed trailing commas in array literals since the beginning.
+
+JavaScript allows trailing commas wherever a comma-separated list of values is accepted and more values may be expected after the last item.
+
+Trailing commas are also allowed in:
+* array literals
+* object literals
+* parameter definitions
+* function calls
+* named imports
+* named exports
+* array and object destructuring
+
+In all these cases, the trailing comma is entirely optional and doesn't change the program's semantics in any way.
+
+`JSON`, however, disallows all trailing commas.
+
+```js
+// OBJECTS
+// bad
+const hero = {
+    firstName: 'Dana',
+    lastName: 'Scully'
+};
+
+// good
+const hero = {
+    firstName: 'Dana',
+    lastName: 'Scully',
+};
+
+// ARRAYS
+// bad
+const heroes = [
+    'Batman',
+    'Superman'
+];
+
+// good
+const heroes = [
+    'Batman',
+    'Superman',
+];
+
+// FUNCTIONS
+// bad
+function createHero(
+    firstName,
+    lastName,
+    inventorOf
+) {
+    // does nothing
+}
+
+// good
+function createHero(
+    firstName,
+    lastName,
+    inventorOf,
+) {
+    // does nothing
+}
+
+// FUNCTION WITH REST ELEMENT
+// good (note that a comma must not appear after a "rest" element)
+function createHero(
+    firstName,
+    lastName,
+    inventorOf,
+    ...heroArgs
+) {
+    // does nothing
+}
+
+// FUNCTION CALLS
+// bad
+createHero(
+    firstName,
+    lastName,
+    inventorOf
+);
+
+// good
+createHero(
+    firstName,
+    lastName,
+    inventorOf,
+);
+
+// good (note that a comma must not appear after a "rest" element)
+createHero(
+    firstName,
+    lastName,
+    inventorOf,
+    ...heroArgs
+);
+```
