@@ -11,6 +11,9 @@ Pursuit JavaScript Style Guide
 	- [Understanding Scope](#understanding-scope)
 	- [Const Over Let](#const-over-let)
 	- [Avoid Using Var](#avoid-using-var)
+	- [Group all your consts and then group all your lets](#group-all-your-consts-and-then-group-all-your-lets)
+	- [Assign variables when you need them](#assign-variables-when-you-need-them)
+- [Comparison Operators \& Equality](#comparison-operators--equality)
 	- [Proper Indentation and Spacing](#proper-indentation-and-spacing)
 	- [Use of Semicolons](#use-of-semicolons)
 - [Naming Conventions](#naming-conventions)
@@ -30,12 +33,20 @@ Pursuit JavaScript Style Guide
 - [Functions](#functions)
 	- [Arrow Functions](#arrow-functions)
 	- [Classes \& Constructors](#classes--constructors)
+- [Modules](#modules)
+	- [Properties](#properties)
 - [Comments](#comments)
 	- [Prefixing your comments](#prefixing-your-comments)
 - [Whitespace](#whitespace)
 	- [No Trailing Whitespace](#no-trailing-whitespace)
 - [Commas](#commas)
 	- [Trailing commas](#trailing-commas)
+- [Type Casting \& Coercion](#type-casting--coercion)
+	- [Strings](#strings-1)
+	- [Numbers](#numbers)
+	- [Booleans](#booleans)
+	- [Testing](#testing)
+	- [Resources](#resources)
 
 ## Types
 
@@ -96,6 +107,8 @@ Variables declared with `let` or `const` can belong to an additional scope:
 ## Const Over Let
 Variables in JavaScript are either `const` or `let`. 
 
+Always use `const` or `let` to declare variables. Not doing so will result in global variables. We want to avoid polluting the global namespace.
+
 It's good practice to use `const` over `let` whenever possible, as it makes your code more predictable and less prone to bugs.
 
 If you must reassign references, use `let` instead of `var`.
@@ -123,6 +136,231 @@ The keywords `let` and `var` both declare new variables in JavaScript. The diffe
 * Variables declared by `var` are available throughout the function in which they’re declared.
 
 Avoid using `var` because of function scope. Using `let` or `const` uses block scope, which is less error-prone.Additionally, ECMAScript6 (ES6 / JavaScript 2015) encourages you to declare variables with `let` not `var`.
+
+## Group all your consts and then group all your lets
+Group all your `const`s and then group all your `let`s. This is helpful when later on you might need to assign a variable depending on one of the previously assigned variables.
+```js
+// bad
+let i, len, dragonball,
+	items = getItems(),
+	goSportsTeam = true;
+
+// bad
+let i;
+const items = getItems();
+let dragonball;
+const goSportsTeam = true;
+let len;
+
+// good
+const goSportsTeam = true;
+const items = getItems();
+let dragonball;
+let i;
+let length;
+```
+
+## Assign variables when you need them
+Assign variables where you need them, but place them in a reasonable place. This is because `let` and `const` are block scoped and not function scoped.
+```js
+// bad - unnecessary function call
+function checkName(hasName) {
+	const name = getName();
+
+	if (hasName === "test") {
+		return false;
+	}
+
+	if (name === "test") {
+		this.setName("");
+		return false;
+	}
+
+	return name;
+}
+
+// good
+function checkName(hasName) {
+	if (hasName === "test") {
+		return false;
+	}
+
+	const name = getName();
+
+	if (name === "test") {
+		this.setName("");
+		return false;
+	}
+
+	return name;
+}
+```
+
+Don’t chain variable assignments. Chaining variable assignments creates implicit global variables.
+```js
+// bad
+(function example() {
+	// JavaScript interprets this as
+	// let a = ( b = ( c = 1 ) );
+	// The let keyword only applies to variable a; variables b and c become
+	// global variables.
+	let a = (b = c = 1);
+})();
+
+console.log(a); // throws ReferenceError
+console.log(b); // 1
+console.log(c); // 1
+
+// good
+(function example() {
+	let a = 1;
+	let b = a;
+	let c = a;
+})();
+
+console.log(a); // throws ReferenceError
+console.log(b); // throws ReferenceError
+console.log(c); // throws ReferenceError
+
+// the same applies for `const`
+```
+Avoid using unary increments and decrements (++, --). Per the eslint documentation, unary increment and decrement statements are subject to automatic semicolon insertion and can cause silent errors with incrementing or decrementing values within an application. It is also more expressive to mutate your values with statements like num += 1 instead of num++ or num ++. Disallowing unary increment and decrement statements also prevents you from pre-incrementing/pre-decrementing values unintentionally which can also cause unexpected behavior in your programs.
+```js
+// bad
+
+const array = [1, 2, 3];
+let num = 1;
+num++;
+--num;
+
+let sum = 0;
+let truthyCount = 0;
+for (let i = 0; i < array.length; i++) {
+	let value = array[i];
+	sum += value;
+	if (value) {
+		truthyCount++;
+	}
+}
+
+// good
+
+const array = [1, 2, 3];
+let num = 1;
+num += 1;
+num -= 1;
+
+const sum = array.reduce((a, b) => a + b, 0);
+const truthyCount = array.filter(Boolean).length;
+```
+
+Avoid linebreaks before or after = in an assignment. If your assignment violates max-len, surround the value in parens. 
+```js
+// bad
+const foo =
+	superLongLongLongLongLongLongLongLongFunctionName();
+
+// bad
+const foo
+	 = 'superLongLongLongLongLongLongLongLongString';
+
+// good
+const foo = (
+	superLongLongLongLongLongLongLongLongFunctionName()
+);
+
+// good
+const foo = 'superLongLongLongLongLongLongLongLongString';
+```
+
+Disallow unused variables. Variables that are declared and not used anywhere in the code are most likely an error due to incomplete refactoring. Such variables take up space in the code and can lead to confusion by readers.
+
+```js
+// bad
+
+const some_unused_var = 42;
+
+// Write-only variables are not considered as used.
+let y = 10;
+y = 5;
+
+// A read for a modification of itself is not considered as used.
+let z = 0;
+z = z + 1;
+
+// Unused function arguments.
+function getX(x, y) {
+	return x;
+}
+
+// good
+
+function getXPlusY(x, y) {
+	return x + y;
+}
+
+const x = 1;
+const y = a + 2;
+
+alert(getXPlusY(x, y));
+
+// 'type' is ignored even if unused because it has a rest property sibling.
+// This is a form of extracting an object that omits the specified keys.
+const { type, ...coords } = data;
+// 'coords' is now the 'data' object without its 'type' property.
+```
+
+# Comparison Operators & Equality
+Use `===` and `!==` over `==` and `!=`.
+
+Conditional statements such as the if statement evaluate their expression using coercion with the ToBoolean abstract method and always follow these simple rules:
+
+* Objects evaluate to true
+* Undefined evaluates to false
+* Null evaluates to false
+* Booleans evaluate to the value of the boolean
+* Numbers evaluate to false if +0, -0, or NaN, otherwise true
+* Strings evaluate to false if an empty string '', otherwise true
+
+```js
+if ([0] && []) {
+	// true
+	// an array (even an empty one) is an object, objects will evaluate to true
+}
+```
+
+Use shortcuts for booleans, but explicit comparisons for strings and numbers.
+```js
+// bad
+if (isValid === true) {
+	// ...
+}
+
+// good
+if (isValid) {
+	// ...
+}
+
+// bad
+if (name) {
+	// ...
+}
+
+// good
+if (name !== "") {
+	// ...
+}
+
+// bad
+if (collection.length) {
+	// ...
+}
+
+// good
+if (collection.length > 0) {
+	// ...
+}
+```
 
 ## Proper Indentation and Spacing
 
@@ -880,6 +1118,174 @@ class Foo {
 }
 ```
 
+# Modules
+Always use modules (import/export) over a non-standard module system. You can always transpile to your preferred module system.
+Modules are the future, let’s start using the future now.
+```js
+// bad
+const AirbnbStyleGuide = require('./AirbnbStyleGuide');
+module.exports = AirbnbStyleGuide.es6;
+
+// ok
+import AirbnbStyleGuide from './AirbnbStyleGuide';
+export default AirbnbStyleGuide.es6;
+
+// best
+import { es6 } from './AirbnbStyleGuide';
+export default es6;
+```
+
+Do not use wildcard imports. This makes sure you have a single default export.
+```js
+// bad
+import * as AirbnbStyleGuide from './AirbnbStyleGuide';
+
+// good
+import AirbnbStyleGuide from './AirbnbStyleGuide';
+```
+
+And do not export directly from an import. Although the one-liner is concise, having one clear way to import and one clear way to export makes things consistent.
+```js
+// bad
+// filename es6.js
+export { es6 as default } from './AirbnbStyleGuide';
+
+// good
+// filename es6.js
+import { es6 } from './AirbnbStyleGuide';
+export default es6;
+```
+
+Only import from a path in one place.
+```js
+// bad
+import foo from 'foo';
+// … some other imports … //
+import { named1, named2 } from 'foo';
+
+// good
+import foo, { named1, named2 } from 'foo';
+
+// good
+import foo, {
+    named1,
+    named2,
+} from 'foo';
+```
+
+Do not export mutable bindings.
+```js
+// bad
+let foo = 3;
+export { foo };
+
+// good
+const foo = 3;
+export { foo };
+```
+
+In modules with a single export, prefer default export over named export.
+```js
+// bad
+export function foo() {}
+
+// good
+export default function foo() {}
+```
+
+Put all imports above non-import statements.
+```js
+// bad
+import foo from 'foo';
+foo.init();
+
+import bar from 'bar';
+
+// good
+import foo from 'foo';
+import bar from 'bar';
+
+foo.init();
+```
+
+Multiline imports should be indented just like multiline array and object literals.
+```js
+// bad
+import {longNameA, longNameB, longNameC, longNameD, longNameE} from 'path';
+
+// good
+import {
+    longNameA,
+    longNameB,
+    longNameC,
+    longNameD,
+    longNameE,
+} from 'path';
+```
+
+Disallow Webpack loader syntax in module import statements.
+```js
+// bad
+import fooSass from 'css!sass!foo.scss';
+import barCss from 'style!css!bar.css';
+
+// good
+import fooSass from 'foo.scss';
+import barCss from 'bar.css';
+```
+
+Do not include JavaScript filename extensions.
+```js
+// bad
+import foo from './foo.js';
+import bar from './bar.jsx';
+import baz from './baz/index.jsx';
+
+// good
+import foo from './foo';
+import bar from './bar';
+import baz from './baz';
+```
+
+## Properties
+Use dot notation when accessing properties.
+```js
+const luke = {
+	jedi: true,
+	age: 28,
+};
+
+// bad
+const isJedi = luke['jedi'];
+
+// good
+const isJedi = luke.jedi;
+```
+
+Use bracket notation [] when accessing properties with a variable.
+```js
+const luke = {
+	jedi: true,
+	age: 28,
+};
+
+function getProp(prop) {
+	return luke[prop];
+}
+
+const isJedi = getProp('jedi');
+```
+
+Use exponentiation operator `**` when calculating exponentiations.
+```js
+// bad
+const binary = Math.pow(2, 10);
+
+// good
+const binary = 2 ** 10;
+```
+
+
 # Comments
 Use `/** ... */` for multiline comments.
 
@@ -1033,3 +1439,70 @@ createHero(
     ...heroArgs
 );
 ```
+
+# Type Casting & Coercion
+Perform type coercion at the beginning of the statement.
+
+## Strings
+Disallow `new` operators with the `String`, `Number`, and `Boolean` objects.
+```js
+// => this.reviewScore = 9;
+
+// bad
+const totalScore = new String(this.reviewScore); // typeof totalScore is "object" not "string"
+
+// bad
+const totalScore = this.reviewScore + ''; // invokes this.reviewScore.valueOf()
+
+// bad
+const totalScore = this.reviewScore.toString(); // isn’t guaranteed to return a string
+
+// good
+const totalScore = String(this.reviewScore);
+```
+
+## Numbers
+Use `Number` for type casting and parseInt always with a radix for parsing strings.
+```js
+const inputValue = '4';
+
+// bad
+const val = new Number(inputValue);
+
+// bad
+const val = +inputValue;
+
+// bad
+const val = inputValue >> 0;
+
+// bad
+const val = parseInt(inputValue);
+
+// good
+const val = Number(inputValue);
+
+// good
+const val = parseInt(inputValue, 10);
+```
+
+## Booleans
+Disallow `new` operators with `Boolean` objects.
+
+```js
+const age = 0;
+
+// bad
+const hasAge = new Boolean(age);
+
+// good
+const hasAge = Boolean(age);
+
+// best
+const hasAge = !!age;
+```
+
+## Testing
+Whichever testing framework you use, you should be writing tests!
+
+## Resources
+[Resources](https://github.com/airbnb/javascript?tab=readme-ov-file#resources)
