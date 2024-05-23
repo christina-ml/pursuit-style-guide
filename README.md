@@ -19,13 +19,15 @@ Pursuit JavaScript Style Guide
 	- [Variables Should Start with Adjectives or Nouns](#variables-should-start-with-adjectives-or-nouns)
 	- [Avoid Using Keywords in Variables and Function Names](#avoid-using-keywords-in-variables-and-function-names)
 	- [When Using a Type in the Name use an Abbreviation](#when-using-a-type-in-the-name-use-an-abbreviation)
-	- [Double Loop](#double-loop)
-	- [Objects](#objects)
-	- [Arrays](#arrays)
+- [Double Loop](#double-loop)
+- [Objects](#objects)
+- [Arrays](#arrays)
 	- [Destructuring](#destructuring)
-	- [Strings](#strings)
-	- [Functions](#functions)
+- [Strings](#strings)
+- [Functions](#functions)
 	- [Arrow Functions](#arrow-functions)
+	- [Classes \& Constructors](#classes--constructors)
+- [Modules](#modules)
 
 ## Types
 
@@ -383,7 +385,7 @@ let lettersStr = "";
 let scoresObj = {};
 ```
 
-## Double Loop
+# Double Loop
 Inside a `for loop`, there can be another loop nested inside it.
 
 Declaring variables inside a double loop will make it more readable. For example, inside the outer loop you can declare a variable called `const word = words[i]`. Then in the inner loop, you can iterate over `word` instead of `words[i]`.
@@ -445,7 +447,7 @@ words.forEach((word) => {
 });
 ```
 
-## Objects
+# Objects
 Use the literal syntax for object creation.
 ```js
 // bad
@@ -455,7 +457,7 @@ const students = new Object();
 const students = {};
 ```
 
-## Arrays
+# Arrays
 Use the literal syntax for array creation.
 ```js
 // bad
@@ -517,7 +519,7 @@ function processInput(input) {
 const { left, top } = processInput(input);
 ```
 
-## Strings
+# Strings
 Use single quotes `''` for strings.
 ```js
 // bad
@@ -581,7 +583,7 @@ const foo = `my name is '${name}'`;
 
 Never use `eval()` on a string; it opens too many vulnerabilities and is an enormous security risk.
 
-## Functions
+# Functions
 Use named function expressions instead of function declarations.
 ```js
 // bad
@@ -616,3 +618,193 @@ When you must use an anonymous function (as when passing an inline callback), us
 	return x * y;
 });
 ```
+
+## Classes & Constructors
+Always use `class`. Avoid manipulating `prototype` directly.
+
+```js
+// bad
+function Queue(contents = []) {
+	this.queue = [...contents];
+}
+Queue.prototype.pop = function () {
+	const value = this.queue[0];
+	this.queue.splice(0, 1);
+	return value;
+};
+
+// good
+class Queue {
+	constructor(contents = []) {
+    	this.queue = [...contents];
+	}
+  	pop() {
+		const value = this.queue[0];
+		this.queue.splice(0, 1);
+		return value;
+	}
+}
+```
+
+Use `extends` for inheritance.
+
+```js
+// bad
+const inherits = require('inherits');
+function PeekableQueue(contents) {
+	Queue.apply(this, contents);
+}
+inherits(PeekableQueue, Queue);
+PeekableQueue.prototype.peek = function () {
+	return this.queue[0];
+};
+
+// good
+class PeekableQueue extends Queue {
+	peek() {
+		return this.queue[0];
+	}
+}
+```
+
+Methods can return `this` to help with method chaining.
+
+```js
+// bad
+Jedi.prototype.jump = function () {
+	this.jumping = true;
+	return true;
+};
+
+Jedi.prototype.setHeight = function (height) {
+	this.height = height;
+};
+
+const luke = new Jedi();
+luke.jump(); // => true
+luke.setHeight(20); // => undefined
+
+// good
+class Jedi {
+	jump() {
+		this.jumping = true;
+		return this;
+	}
+
+	setHeight(height) {
+		this.height = height;
+		return this;
+	}
+}
+
+const luke = new Jedi();
+
+luke.jump().setHeight(20);
+```
+
+It’s okay to write a custom `toString()` method, just make sure it works successfully and causes no side effects.
+```js
+class Jedi {
+	constructor(options = {}) {
+		this.name = options.name || "no name";
+	}
+
+	getName() {
+		return this.name;
+	}
+
+	toString() {
+		return `Jedi - ${this.getName()}`;
+	}
+}
+
+```
+
+Classes have a default constructor if one is not specified. An empty constructor function or one that just delegates to a parent class is unnecessary. 
+```js
+// bad
+class Jedi {
+	constructor() {}
+
+	getName() {
+		return this.name;
+	}
+}
+
+// bad
+class Rey extends Jedi {
+	constructor(...args) {
+		super(...args);
+	}
+}
+
+// good
+class Rey extends Jedi {
+	constructor(...args) {
+		super(...args);
+		this.name = "Rey";
+	}
+}
+
+```
+
+Avoid duplicate class members. Duplicate class member declarations will silently prefer the last one - having duplicates is almost certainly a bug.
+```js
+// bad
+class Foo {
+	bar() {
+		return 1;
+	}
+	bar() {
+		return 2;
+	}
+}
+
+// good
+class Foo {
+	bar() {
+		return 1;
+	}
+}
+
+// good
+class Foo {
+	bar() {
+		return 2;
+	}
+}
+```
+
+Class methods should use `this` or be made into a static method unless an external library or framework requires using specific non-static methods. Being an instance method should indicate that it behaves differently based on properties of the receiver
+
+```js
+// bad
+class Foo {
+	bar() {
+		console.log("bar");
+	}
+}
+
+// good - this is used
+class Foo {
+	bar() {
+		console.log(this.bar);
+	}
+}
+
+// good - constructor is exempt
+class Foo {
+	constructor() {
+		// ...
+	}
+}
+
+// good - static methods aren't expected to use this
+class Foo {
+	static bar() {
+		console.log("bar");
+	}
+}
+```
+
+# Modules
